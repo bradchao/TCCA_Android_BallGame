@@ -13,12 +13,14 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class GameView extends View {
     private Bitmap ball;
-    private float viewW, viewH, ballW, ballH, ballX, ballY, dx, dy;
+    private float viewW, viewH, ballW, ballH;
+    private LinkedList<BallTask> balls = new LinkedList<>();
 
     public GameView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -27,7 +29,6 @@ public class GameView extends View {
         ball = BitmapFactory.decodeResource(context.getResources(), R.drawable.ball);
 
         timer.schedule(new RefreshTask(), 0, 17);
-        timer.schedule(new BallTask(), 1000, 30);
     }
 
     private boolean isInit; // false
@@ -35,7 +36,6 @@ public class GameView extends View {
         isInit = true;
         viewW = getWidth(); viewH = getHeight();
         ballW = viewW / 12; ballH = ballW;
-        dx = dy = 16;
         Matrix matrix = new Matrix();
         matrix.postScale(ballW / ball.getWidth(), ballH / ball.getHeight());
         ball = Bitmap.createBitmap(ball, 0, 0, ball.getWidth(), ball.getHeight(), matrix, false);
@@ -46,15 +46,18 @@ public class GameView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (!isInit) init();
-
-        canvas.drawBitmap(ball, ballX, ballY, null);
+        for (BallTask ballTask : balls) {
+            canvas.drawBitmap(ball, ballTask.x, ballTask.y, null);
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        ballX = event.getX() - ballW/2;
-        ballY = event.getY() - ballH/2;
-        invalidate();
+        float ballX = event.getX() - ballW/2;
+        float ballY = event.getY() - ballH/2;
+        BallTask ballTask = new BallTask(ballX, ballY);
+        balls.add(ballTask);
+        timer.schedule(ballTask, 500, 30);
         return false; //super.onTouchEvent(event);
     }
 
@@ -66,16 +69,21 @@ public class GameView extends View {
         }
     }
     private class BallTask extends TimerTask {
+        float x, y, dx, dy;
+        BallTask(float x, float y){
+            dx = dy = 16;
+            this.x = x; this.y = y;
+        }
         @Override
         public void run() {
-            if (ballX < 0 || ballX + ballW > viewW){
+            if (x < 0 || x + ballW > viewW){
                 dx *= -1;
             }
-            if (ballY < 0 || ballY + ballH > viewH){
+            if (y < 0 || y + ballH > viewH){
                 dy *= -1;
             }
-            ballX += dx;
-            ballY += dy;
+            x += dx;
+            y += dy;
         }
     }
 }
