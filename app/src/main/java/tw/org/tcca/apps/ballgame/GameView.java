@@ -13,6 +13,9 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class GameView extends View {
     private Bitmap ball;
     private float viewW, viewH, ballW, ballH, ballX, ballY;
@@ -28,14 +31,14 @@ public class GameView extends View {
 
     private boolean isInit; // false
     private void init(){
+        isInit = true;
         viewW = getWidth(); viewH = getHeight();
         ballW = viewW / 10; ballH = ballW;
         Matrix matrix = new Matrix();
         matrix.postScale(ballW / ball.getWidth(), ballH / ball.getHeight());
         ball = Bitmap.createBitmap(ball, 0, 0, ball.getWidth(), ball.getHeight(), matrix, false);
 
-
-        isInit = true;
+        timer.schedule(new BallTask(), 0, 17);
     }
 
     @Override
@@ -52,5 +55,13 @@ public class GameView extends View {
         ballY = event.getY() - ballH/2;
         invalidate();
         return false; //super.onTouchEvent(event);
+    }
+
+    private Timer timer = new Timer();
+    private class BallTask extends TimerTask {
+        @Override
+        public void run() {
+            invalidate();
+        }
     }
 }
