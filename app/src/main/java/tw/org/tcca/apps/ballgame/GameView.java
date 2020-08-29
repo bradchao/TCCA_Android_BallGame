@@ -8,13 +8,14 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
 public class GameView extends View {
     private Bitmap ball;
-    private float viewW, viewH, ballW, ballH;
+    private float viewW, viewH, ballW, ballH, ballX, ballY;
 
     public GameView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -42,6 +43,14 @@ public class GameView extends View {
         super.onDraw(canvas);
         if (!isInit) init();
 
-        canvas.drawBitmap(ball, 0, 0, null);
+        canvas.drawBitmap(ball, ballX, ballY, null);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        ballX = event.getX() - ballW/2;
+        ballY = event.getY() - ballH/2;
+        invalidate();
+        return false; //super.onTouchEvent(event);
     }
 }
