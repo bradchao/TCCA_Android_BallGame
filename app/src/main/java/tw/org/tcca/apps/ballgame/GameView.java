@@ -18,7 +18,7 @@ import java.util.TimerTask;
 
 public class GameView extends View {
     private Bitmap ball;
-    private float viewW, viewH, ballW, ballH, ballX, ballY;
+    private float viewW, viewH, ballW, ballH, ballX, ballY, dx, dy;
 
     public GameView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -26,19 +26,20 @@ public class GameView extends View {
 
         ball = BitmapFactory.decodeResource(context.getResources(), R.drawable.ball);
 
-
+        timer.schedule(new RefreshTask(), 0, 17);
+        timer.schedule(new BallTask(), 1000, 30);
     }
 
     private boolean isInit; // false
     private void init(){
         isInit = true;
         viewW = getWidth(); viewH = getHeight();
-        ballW = viewW / 10; ballH = ballW;
+        ballW = viewW / 12; ballH = ballW;
+        dx = dy = 16;
         Matrix matrix = new Matrix();
         matrix.postScale(ballW / ball.getWidth(), ballH / ball.getHeight());
         ball = Bitmap.createBitmap(ball, 0, 0, ball.getWidth(), ball.getHeight(), matrix, false);
 
-        timer.schedule(new BallTask(), 0, 17);
     }
 
     @Override
@@ -58,10 +59,23 @@ public class GameView extends View {
     }
 
     private Timer timer = new Timer();
-    private class BallTask extends TimerTask {
+    private class RefreshTask extends TimerTask {
         @Override
         public void run() {
             invalidate();
+        }
+    }
+    private class BallTask extends TimerTask {
+        @Override
+        public void run() {
+            if (ballX < 0 || ballX + ballW > viewW){
+                dx *= -1;
+            }
+            if (ballY < 0 || ballY + ballH > viewH){
+                dy *= -1;
+            }
+            ballX += dx;
+            ballY += dy;
         }
     }
 }
